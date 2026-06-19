@@ -66,7 +66,7 @@ Asset/Experiments
 
 
 
-詳しい内容は研究企画書に記載しています．
+詳しい内容は研究要旨(research-Abstract)に記載しています．
 
 ### 
 
