@@ -637,6 +637,7 @@ public class HapticPlugin : MonoBehaviour
     #endregion
 
     #region ContactPointInfo_Exchange
+    [System.Serializable]
     public struct ContactPointInfo
     {
         public Vector3 Location;
@@ -686,7 +687,7 @@ public class HapticPlugin : MonoBehaviour
     #endregion
         
     #region Unity_Default_Functions 
-    void OnEnable()
+    public void OnEnable()
     {
         Buttons = new int[4];
         LastButtons = new int[4];
@@ -724,7 +725,7 @@ public class HapticPlugin : MonoBehaviour
     }
 
 
-    void Start()
+    public void Start()
     {
         //debug_max_velocity = 0.0f;
         startSchedulers();
@@ -747,7 +748,7 @@ public class HapticPlugin : MonoBehaviour
 
 
 
-    private void FixedUpdate()
+    public void FixedUpdate()
     {
         if (DeviceHHD >= 0)
         {
@@ -1866,7 +1867,7 @@ public class HapticPlugin : MonoBehaviour
             //Debug.Log("EPOS: " + epos.ToString("F5"));
 
             UpdateForceOnCollision(collision);
-            
+
             //updateContactPointInfo(DeviceIdentifier);
 
 
@@ -1956,8 +1957,12 @@ public class HapticPlugin : MonoBehaviour
                              
 
                 contInfo.Location = gameObject.transform.InverseTransformPoint(collision.GetContact(i).point)/ScaleFactor;
+                Debug.Log("contInfoLocation" + contInfo.Location);
+
                 contInfo.Normal = gameObject.transform.InverseTransformVector(collision.GetContact(i).normal);
-                
+                Debug.Log("contInfoNormal" + contInfo.Normal);
+                Debug.Log("contInfoNormal" + collision.GetContact(i).normal);
+
                 contInfo.MaterialMass = hapMat.hMass;
                 contInfo.MaterialStiffness = hapMat.hStiffness*sFac;
                 if(hapMat.hStiffness > CollisionMesh.GetComponent<HapticCollider>().hStiffness)
@@ -1972,8 +1977,10 @@ public class HapticPlugin : MonoBehaviour
                         contInfo.MaterialStiffness = GrabObject.GetComponent<HapticMaterial>().hStiffness * sFac;
                     }
                 }
+                Debug.Log("stiffness" + contInfo.MaterialStiffness);
 
-                    if (enable_damping == true)
+
+                if (enable_damping == true)
                 {
                     contInfo.MaterialDamping = hapMat.hDamping;
                 }
@@ -2013,7 +2020,8 @@ public class HapticPlugin : MonoBehaviour
                     contInfo.RigBodyMass = collision.collider.GetComponent<Rigidbody>().mass;
                     //contInfo.ColImpulse = collision.impulse.magnitude * contInfo.Normal;
                     contInfo.ColImpulse = collision.impulse * impCorrection;
-                    //Debug.Log("Collision Impulse:" + contInfo.ColImpulse);
+
+                    Debug.Log("Collision Impulse:" + contInfo.ColImpulse);
                     contInfo.PhxDeltaTime = Time.fixedDeltaTime;
                     contInfo.ImpulseDepth = hapMat.hImpulseD;
                 }
@@ -2036,7 +2044,7 @@ public class HapticPlugin : MonoBehaviour
                 {
                                         
                     ContactPointsInfo.Add(contInfo);
-                    
+
                 }
                 
                 LastContact = contInfo.Location;
@@ -2092,7 +2100,11 @@ public class HapticPlugin : MonoBehaviour
         //Debug.Log("Number of Collision Points:" + counter);
         updateContactPointInfo(DeviceIdentifier);
         //Vector3 anPos = gameObject.transform.InverseTransformPoint(CollisionMesh.transform.position);
+        Debug.Log("VM" + VisualizationMesh.transform.position);
+        Debug.Log("InvVM" + this.transform.InverseTransformPoint(VisualizationMesh.transform.position));
+
         Vector3 anPos = this.transform.InverseTransformPoint(VisualizationMesh.transform.position) / ScaleFactor;
+        Debug.Log("anchored" + anPos);
         setAnchorPosition(DeviceIdentifier, Vector3ToDoubleArray(anPos));
         //setAnchorPosition(DeviceIdentifier, Vector3ToDoubleArray(CurrentPosition));
         //Debug.Log("AnchorPos:" + anPos);

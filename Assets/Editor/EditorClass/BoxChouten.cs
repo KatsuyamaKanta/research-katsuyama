@@ -23,28 +23,22 @@ public class BoxChouten
         var trans = boxCollider.gameObject.transform;
         var min = boxCollider.center - boxCollider.size * 0.5f;
         var max = boxCollider.center + boxCollider.size * 0.5f;
-
-        vertices[0] = trans.TransformPoint(new Vector3(min.x, min.y, min.z));//?E????
-        vertices[1] = trans.TransformPoint(new Vector3(min.x, min.y, max.z));//?E??O??
-        vertices[2] = trans.TransformPoint(new Vector3(min.x, max.y, min.z));//?E????
-        vertices[3] = trans.TransformPoint(new Vector3(min.x, max.y, max.z));//?E??O??
-        vertices[4] = trans.TransformPoint(new Vector3(max.x, min.y, min.z));//??????
-        vertices[5] = trans.TransformPoint(new Vector3(max.x, min.y, max.z));//????O??
-        vertices[6] = trans.TransformPoint(new Vector3(max.x, max.y, min.z));//??????
-        vertices[7] = trans.TransformPoint(new Vector3(max.x, max.y, max.z));//????O??
+        vertices[0] = trans.TransformPoint(new Vector3(min.x, min.y, min.z));//migi oku shita
+        vertices[1] = trans.TransformPoint(new Vector3(min.x, min.y, max.z));//migi temae shita
+        vertices[2] = trans.TransformPoint(new Vector3(min.x, max.y, min.z));//migi oku ue
+        vertices[3] = trans.TransformPoint(new Vector3(min.x, max.y, max.z));// migi temae ue
+        vertices[4] = trans.TransformPoint(new Vector3(max.x, min.y, min.z));//hidari oku shita
+        vertices[5] = trans.TransformPoint(new Vector3(max.x, min.y, max.z));//hidari temae shita
+        vertices[6] = trans.TransformPoint(new Vector3(max.x, max.y, min.z));//hidari oku ue
+        vertices[7] = trans.TransformPoint(new Vector3(max.x, max.y, max.z));//hidari temae ue
 
         surfaces[0].Set3Points(vertices[2], vertices[3], vertices[6]);
         surfaces[0].Flip();
-
         surfaces[1].Set3Points(vertices[0], vertices[2], vertices[3]);
-
         surfaces[2].Set3Points(vertices[0], vertices[2], vertices[6]);
         surfaces[2].Flip();
-
         surfaces[3].Set3Points(vertices[1], vertices[3], vertices[7]);
-
         surfaces[4].Set3Points(vertices[4], vertices[5], vertices[7]);
-
         surfaces[5].Set3Points(vertices[0], vertices[1], vertices[5]);
     }
 
@@ -54,12 +48,8 @@ public class BoxChouten
         calculateDistance();
     }
 
-    private void calculateDistance()
+    public void log()
     {
-        for (int i = 0; i < 6; i++)
-        {
-            distance[i] = surfaces[i].GetDistanceToPoint(ControlledObject.transform.position);
-        }
     }
 
     private Plane getClosestSurface()
@@ -78,6 +68,14 @@ public class BoxChouten
         return plane;
     }
 
+    private void calculateDistance()
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            distance[i] = surfaces[i].GetDistanceToPoint(ControlledObject.transform.position);
+        }
+    }
+
     public Vector3 getHousenOfClosestSurface()
     {
         return getClosestSurface().normal;
@@ -86,5 +84,7 @@ public class BoxChouten
     public Vector3 getClosestPoint(GameObject sphere)
     {
         return getClosestSurface().ClosestPointOnPlane(sphere.transform.position);
+
     }
+
 }

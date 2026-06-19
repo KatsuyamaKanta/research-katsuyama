@@ -180,7 +180,7 @@ public class HapticMaterial : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-
+        Debug.Log("enterin");
         if (HPlugin != null)
         { if(this == HPlugin.CollisionMesh)
             {

@@ -1381,7 +1381,7 @@ public class ExperimentHapticPlugin : MonoBehaviour
         updateContactPointInfo(DeviceIdentifier);
         //Vector3 anPos = gameObject.transform.InverseTransformPoint(CollisionMesh.transform.position);
         Vector3 anPos = this.transform.InverseTransformPoint(VisualizationMesh.transform.position) / ScaleFactor;
-        anPos = new Vector3(anPos.x * 51.0f, anPos.y, anPos.z);
+        anPos = new Vector3(anPos.x*51.0f,anPos.y,anPos.z);
         Debug.Log("anchor");
         Debug.Log(anPos);
         Debug.Log(this.transform.position);
@@ -1670,11 +1670,11 @@ public class ExperimentHapticPlugin : MonoBehaviour
             Gizmos.color = Color.yellow;
             //if (isNavRotation())
             //{
-            Gizmos.color = Color.blue;
+                Gizmos.color = Color.blue;
             //}
             //if (isNavTranslation())
             //{
-            Gizmos.color = Color.magenta;
+                Gizmos.color = Color.magenta;
             //}
             Gizmos.matrix = gameObject.transform.localToWorldMatrix;
             Gizmos.DrawWireCube(maxCenter, maxBox);
