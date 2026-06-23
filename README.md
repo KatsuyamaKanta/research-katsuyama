@@ -38,11 +38,13 @@ Asset/Editor
 
 \-Unityのエディタ拡張についてのコードです．
 
-&#x20;  Editor/EditorClass
+
+
+&#x20;  ↳Editor/EditorClass
 
 &#x20;  -Unityエディタ上でのオブジェクトの操作と衝突判定を定義しているクラスです．
 
-&#x20;  Editor/EditorWindow
+&#x20;  ↳Editor/EditorWindow
 
 &#x20;  -専用のカスタムウィンドウを設定しています．
 
@@ -86,7 +88,9 @@ Asset/Experiments
 
 
 
-‐ メッシュオブジェクトの操作と衝突判定の実装　EditorClass/MeshSDF.cs と EditorClass/CustomHapticEditor.csのcalculateCollisionPoint関数，calculateCollisionVector関数
+‐ メッシュオブジェクトの操作と衝突判定の実装　
+
+&#x20;   EditorClass/MeshSDF.cs と EditorClass/CustomHapticEditor.csのcalculateCollisionPoint関数，calculateCollisionVector関数
 
 
 
@@ -112,7 +116,7 @@ Asset/Experiments
 
 　Unity：main(最新版)　2022.3.22f1
 
-&#x20;                    previous-research  2020.3.16f1
+&#x20;        previous-research  2020.3.16f1
 
 　OS：Windows 10
 
