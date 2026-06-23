@@ -9,38 +9,38 @@ using System;
 public class CustomHapticEditor
 {
     //DllImports
-    [DllImport("HapticsDirect")] public static extern void getVersionString(StringBuilder dest, int len);  //!< OpenHaptics ‚Ìƒo[ƒWƒ‡ƒ“•¶š—ñ‚ğ•Ô‚µ‚Ü‚·B
+    [DllImport("HapticsDirect")] public static extern void getVersionString(StringBuilder dest, int len);  //!< OpenHaptics ã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³æ–‡å­—åˆ—ã‚’è¿”ã—ã¾ã™ã€‚
     // Setup Functions
-    [DllImport("HapticsDirect")] public static extern int initDevice(string deviceName);  //!< ƒnƒvƒeƒBƒbƒNƒfƒoƒCƒX‚ÉÚ‘±‚µA‰Šú‰»‚·‚éB
-    [DllImport("HapticsDirect")] public static extern void getDeviceSN(string configName, StringBuilder dest, int len);   //!< ƒfƒoƒCƒX‚ÌƒVƒŠƒAƒ‹”Ô†‚ğæ“¾
-    [DllImport("HapticsDirect")] public static extern void getDeviceModel(string configName, StringBuilder dest, int len);	//!< ƒfƒoƒCƒX‚Ìƒ‚ƒfƒ‹–¼‚ğæ“¾
+    [DllImport("HapticsDirect")] public static extern int initDevice(string deviceName);  //!< ãƒãƒ—ãƒ†ã‚£ãƒƒã‚¯ãƒ‡ãƒã‚¤ã‚¹ã«æ¥ç¶šã—ã€åˆæœŸåŒ–ã™ã‚‹ã€‚
+    [DllImport("HapticsDirect")] public static extern void getDeviceSN(string configName, StringBuilder dest, int len);   //!< ãƒ‡ãƒã‚¤ã‚¹ã®ã‚·ãƒªã‚¢ãƒ«ç•ªå·ã‚’å–å¾—
+    [DllImport("HapticsDirect")] public static extern void getDeviceModel(string configName, StringBuilder dest, int len);	//!< ãƒ‡ãƒã‚¤ã‚¹ã®ãƒ¢ãƒ‡ãƒ«åã‚’å–å¾—
     [DllImport("HapticsDirect")] public static extern void getDeviceMaxValues(string configName, ref double max_stiffness, ref double max_damping, ref double max_force);
-    [DllImport("HapticsDirect")] public static extern void startSchedulers(); //!< Open HapticƒXƒPƒWƒ…[ƒ‰‚ğ‹N“®‚µA•K—v‚È“à•”ƒR[ƒ‹ƒoƒbƒN‚ğŠ„‚è“–‚Ä‚éB
+    [DllImport("HapticsDirect")] public static extern void startSchedulers(); //!< Open Hapticã‚¹ã‚±ã‚¸ãƒ¥ãƒ¼ãƒ©ã‚’èµ·å‹•ã—ã€å¿…è¦ãªå†…éƒ¨ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ã‚’å‰²ã‚Šå½“ã¦ã‚‹ã€‚
     // Device Information
-    [DllImport("HapticsDirect")] public static extern void getWorkspaceArea(string configName, double[] usable6, double[] max6); //!< ƒfƒoƒCƒX‚Ì•¨—“I‚È§ŒÀ‚É‚æ‚Á‚Äì¬‚³‚ê‚½‹«ŠE‚ğæ“¾‚µ‚Ü‚·B
+    [DllImport("HapticsDirect")] public static extern void getWorkspaceArea(string configName, double[] usable6, double[] max6); //!< ãƒ‡ãƒã‚¤ã‚¹ã®ç‰©ç†çš„ãªåˆ¶é™ã«ã‚ˆã£ã¦ä½œæˆã•ã‚ŒãŸå¢ƒç•Œã‚’å–å¾—ã—ã¾ã™ã€‚
     // Updates
-    [DllImport("HapticsDirect")] public static extern void getPosition(string configName, double[] position3); //!< ƒfƒoƒCƒX‚ÌŒ»İˆÊ’u‚ğmm’PˆÊ‚Åæ“¾‚·‚éB¶‚ª+xAã‚ª+yAƒ†[ƒU[•ûŒü‚ª+zB(ƒ†ƒjƒeƒBCSys)
-    [DllImport("HapticsDirect")] public static extern void getVelocity(string configName, double[] velocity3); //!< ƒfƒoƒCƒX‚ÌŒ»İ‚Ì‘¬“x‚ğ mm/s ’PˆÊ‚Åæ“¾‚µ‚Ü‚·B’ˆÓF‚±‚Ì’l‚Í‚ü”g‚ÌƒWƒbƒ^‚ğŒ¸‚ç‚·‚½‚ß‚É•½ŠŠ‰»‚³‚ê‚Ü‚·B(ƒ†ƒjƒeƒBCSys)
-    [DllImport("HapticsDirect")] public static extern void getTransform(string configName, double[] matrix16); //!< ƒfƒoƒCƒXEƒGƒ“ƒfƒtƒFƒNƒ^‚Ì—ñ’·•ÏŠ·‚ğæ“¾‚µ‚Ü‚·B(ƒ†ƒjƒeƒBCSys)
-    [DllImport("HapticsDirect")] public static extern void getButtons(string configName, int[] buttons4, int[] last_buttons4, ref int inkwell); //!< ƒ{ƒ^ƒ“‚ÆÅŒã‚Ìƒ{ƒ^ƒ“‚Ìó‘Ô‚ğæ“¾‚µAƒCƒ“ƒNƒEƒFƒ‹ƒXƒCƒbƒ`‚ª‚ ‚éê‡‚ÍA‚»‚ê‚ªƒAƒNƒeƒBƒu‚©‚Ç‚¤‚©‚ğæ“¾‚·‚éB
-    [DllImport("HapticsDirect")] public static extern void getCurrentForce(string configName, double[] currentforce3);  //!< ƒfƒoƒCƒX‚ÌŒ»İ‚Ì—Í‚ğ N ’PˆÊ‚Åæ“¾‚µ‚Ü‚·B(ƒ†ƒjƒeƒBCSys)
-    [DllImport("HapticsDirect")] public static extern void getJointAngles(string configName, double[] jointAngles, double[] gimbalAngles); //!< ƒfƒoƒCƒX‚ÌŠÖßŠp“x‚ğrad‚Åæ“¾‚µ‚Ü‚·B‚±‚ê‚ç‚ÍƒfƒoƒCƒX‚Ìƒx[ƒXƒtƒŒ[ƒ€‚É‘Î‚·‚éƒA[ƒ}ƒ`ƒ…ƒA‚Ì‰^“®Šw‚ğŒvZ‚·‚é‚½‚ß‚Ég—p‚³‚ê‚éƒWƒ‡ƒCƒ“ƒgŠp“x‚Å‚·B
-    //Touch ƒfƒoƒCƒX‚Ìê‡F Turret Left +, Thigh Up +, Shin Up + ƒfƒoƒCƒX‚ÌƒWƒ“ƒoƒ‹‚ÌŠp“x‚ğrad’PˆÊ‚Åæ“¾‚µ‚Ü‚·F ƒ^ƒbƒ`ƒfƒoƒCƒX‚Ìê‡Fƒjƒ…[ƒgƒ‰ƒ‹ƒ|ƒWƒVƒ‡ƒ“‚©‚ç ‰E‚ª+Aã‚ª-ACW‚ª+B
+    [DllImport("HapticsDirect")] public static extern void getPosition(string configName, double[] position3); //!< ãƒ‡ãƒã‚¤ã‚¹ã®ç¾åœ¨ä½ç½®ã‚’mmå˜ä½ã§å–å¾—ã™ã‚‹ã€‚å·¦ãŒ+xã€ä¸ŠãŒ+yã€ãƒ¦ãƒ¼ã‚¶ãƒ¼æ–¹å‘ãŒ+zã€‚(ãƒ¦ãƒ‹ãƒ†ã‚£CSys)
+    [DllImport("HapticsDirect")] public static extern void getVelocity(string configName, double[] velocity3); //!< ãƒ‡ãƒã‚¤ã‚¹ã®ç¾åœ¨ã®é€Ÿåº¦ã‚’ mm/s å˜ä½ã§å–å¾—ã—ã¾ã™ã€‚æ³¨æ„ï¼šã“ã®å€¤ã¯é«˜å‘¨æ³¢ã®ã‚¸ãƒƒã‚¿ã‚’æ¸›ã‚‰ã™ãŸã‚ã«å¹³æ»‘åŒ–ã•ã‚Œã¾ã™ã€‚(ãƒ¦ãƒ‹ãƒ†ã‚£CSys)
+    [DllImport("HapticsDirect")] public static extern void getTransform(string configName, double[] matrix16); //!< ãƒ‡ãƒã‚¤ã‚¹ãƒ»ã‚¨ãƒ³ãƒ‡ãƒ•ã‚§ã‚¯ã‚¿ã®åˆ—é•·å¤‰æ›ã‚’å–å¾—ã—ã¾ã™ã€‚(ãƒ¦ãƒ‹ãƒ†ã‚£CSys)
+    [DllImport("HapticsDirect")] public static extern void getButtons(string configName, int[] buttons4, int[] last_buttons4, ref int inkwell); //!< ãƒœã‚¿ãƒ³ã¨æœ€å¾Œã®ãƒœã‚¿ãƒ³ã®çŠ¶æ…‹ã‚’å–å¾—ã—ã€ã‚¤ãƒ³ã‚¯ã‚¦ã‚§ãƒ«ã‚¹ã‚¤ãƒƒãƒãŒã‚ã‚‹å ´åˆã¯ã€ãã‚ŒãŒã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‹ã©ã†ã‹ã‚’å–å¾—ã™ã‚‹ã€‚
+    [DllImport("HapticsDirect")] public static extern void getCurrentForce(string configName, double[] currentforce3);  //!< ãƒ‡ãƒã‚¤ã‚¹ã®ç¾åœ¨ã®åŠ›ã‚’ N å˜ä½ã§å–å¾—ã—ã¾ã™ã€‚(ãƒ¦ãƒ‹ãƒ†ã‚£CSys)
+    [DllImport("HapticsDirect")] public static extern void getJointAngles(string configName, double[] jointAngles, double[] gimbalAngles); //!< ãƒ‡ãƒã‚¤ã‚¹ã®é–¢ç¯€è§’åº¦ã‚’radã§å–å¾—ã—ã¾ã™ã€‚ã“ã‚Œã‚‰ã¯ãƒ‡ãƒã‚¤ã‚¹ã®ãƒ™ãƒ¼ã‚¹ãƒ•ãƒ¬ãƒ¼ãƒ ã«å¯¾ã™ã‚‹ã‚¢ãƒ¼ãƒãƒãƒ¥ã‚¢ã®é‹å‹•å­¦ã‚’è¨ˆç®—ã™ã‚‹ãŸã‚ã«ä½¿ç”¨ã•ã‚Œã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆè§’åº¦ã§ã™ã€‚
+    //Touch ãƒ‡ãƒã‚¤ã‚¹ã®å ´åˆï¼š Turret Left +, Thigh Up +, Shin Up + ãƒ‡ãƒã‚¤ã‚¹ã®ã‚¸ãƒ³ãƒãƒ«ã®è§’åº¦ã‚’radå˜ä½ã§å–å¾—ã—ã¾ã™ï¼š ã‚¿ãƒƒãƒãƒ‡ãƒã‚¤ã‚¹ã®å ´åˆï¼šãƒ‹ãƒ¥ãƒ¼ãƒˆãƒ©ãƒ«ãƒã‚¸ã‚·ãƒ§ãƒ³ã‹ã‚‰ å³ãŒ+ã€ä¸ŠãŒ-ã€CWãŒ+ã€‚
     [DllImport("HapticsDirect")] public static extern void getCurrentFrictionForce(string configName, double[] frictionForce);
     [DllImport("HapticsDirect")] public static extern void getGlobalForces(string configName, double[] vibrationForce, double[] constantForce, double[] springForce);
     [DllImport("HapticsDirect")] public static extern void getLocalForces(string configName, double[] stiffnessForce, double[] viscosityForce, double[] dynamicFrictionForce, double[] staticFrictionForce, double[] constantForce, double[] springForce);
     // Force output
-    [DllImport("HapticsDirect")] public static extern void setForce(string configName, double[] lateral3, double[] torque3); //!< ƒnƒvƒeƒBƒbƒNƒfƒoƒCƒX‚É’Ç‰Á‚Ì—Í‚ğ‰Á‚¦‚Ü‚·BƒXƒNƒŠƒvƒg‰»‚³‚ê‚½—Í‚Ì‚½‚ß‚Ég—p‚Å‚«‚Ü‚·‚ªA‚Ù‚Æ‚ñ‚Ç‚Ìê‡AƒGƒtƒFƒNƒg‚ğg—p‚·‚é‚±‚Æ‚ª–]‚Ü‚µ‚¢‚Å‚·B
-    [DllImport("HapticsDirect")] public static extern void setAnchorPosition(string configName, double[] position3); //!< ‰¼‘zƒXƒ^ƒCƒ‰ƒX‚ÌƒAƒ“ƒJ[ˆÊ’u‚ğİ’è‚·‚éiUnity CSysj
+    [DllImport("HapticsDirect")] public static extern void setForce(string configName, double[] lateral3, double[] torque3); //!< ãƒãƒ—ãƒ†ã‚£ãƒƒã‚¯ãƒ‡ãƒã‚¤ã‚¹ã«è¿½åŠ ã®åŠ›ã‚’åŠ ãˆã¾ã™ã€‚ã‚¹ã‚¯ãƒªãƒ—ãƒˆåŒ–ã•ã‚ŒãŸåŠ›ã®ãŸã‚ã«ä½¿ç”¨ã§ãã¾ã™ãŒã€ã»ã¨ã‚“ã©ã®å ´åˆã€ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’ä½¿ç”¨ã™ã‚‹ã“ã¨ãŒæœ›ã¾ã—ã„ã§ã™ã€‚
+    [DllImport("HapticsDirect")] public static extern void setAnchorPosition(string configName, double[] position3); //!< ä»®æƒ³ã‚¹ã‚¿ã‚¤ãƒ©ã‚¹ã®ã‚¢ãƒ³ã‚«ãƒ¼ä½ç½®ã‚’è¨­å®šã™ã‚‹ï¼ˆUnity CSysï¼‰
     [DllImport("HapticsDirect")]
     public static extern void addContactPointInfo(string configName, double[] Location, double[] Normal, float MatStiffness, float MatDamping, double[] MatForce,
     float MatViscosity, float MatFrictionStatic, float MatFrictionDynamic, double[] MatConstForceDir, float MatConstForceMag, double[] MatSpringDir, float MatSpringMag, float MatPopThroughRel, float MatPopThroughAbs,
-    double MatMass, double RigBSpeed, double[] RigBVelocity, double[] RigBAngularVelocity, double RigBMass, double[] ColImpulse, double PhxDeltaTime, double ImpulseDepth); //!< ƒRƒ“ƒ^ƒNƒgƒ|ƒCƒ“ƒgEƒŠƒXƒg‚ÉÕ“ËƒRƒ“ƒ^ƒNƒgƒ|ƒCƒ“ƒgî•ñ‚ğ’Ç‰Á‚·‚éB
-    [DllImport("HapticsDirect")] public static extern void updateContactPointInfo(string configName); //!< ƒRƒ“ƒ^ƒNƒgƒ|ƒCƒ“ƒgî•ñƒŠƒXƒg‚ÌXV
-    [DllImport("HapticsDirect")] public static extern void resetContactPointInfo(string configName); //!< ƒRƒ“ƒ^ƒNƒgƒ|ƒCƒ“ƒgî•ñƒŠƒXƒg‚ğƒŠƒZƒbƒg
-    [DllImport("HapticsDirect")] public static extern void setVibrationValues(string configName, double[] direction3, double magnitude, double frequency, double time); //!< U“®‚Ìƒpƒ‰ƒ[ƒ^[‚ğİ’è‚·‚é
-    [DllImport("HapticsDirect")] public static extern void setSpringValues(string configName, double[] anchor, double magnitude); //!< ƒXƒvƒŠƒ“ƒOFX‚Ìƒpƒ‰ƒ[ƒ^‚ğİ’è‚·‚é
-    [DllImport("HapticsDirect")] public static extern void setConstantForceValues(string configName, double[] direction, double magnitude); //!< ƒRƒ“ƒXƒ^ƒ“ƒgƒtƒH[ƒXFX‚Ìƒpƒ‰ƒ[ƒ^[‚ğİ’è‚·‚é
+    double MatMass, double RigBSpeed, double[] RigBVelocity, double[] RigBAngularVelocity, double RigBMass, double[] ColImpulse, double PhxDeltaTime, double ImpulseDepth); //!< ã‚³ãƒ³ã‚¿ã‚¯ãƒˆãƒã‚¤ãƒ³ãƒˆãƒ»ãƒªã‚¹ãƒˆã«è¡çªã‚³ãƒ³ã‚¿ã‚¯ãƒˆãƒã‚¤ãƒ³ãƒˆæƒ…å ±ã‚’è¿½åŠ ã™ã‚‹ã€‚
+    [DllImport("HapticsDirect")] public static extern void updateContactPointInfo(string configName); //!< ã‚³ãƒ³ã‚¿ã‚¯ãƒˆãƒã‚¤ãƒ³ãƒˆæƒ…å ±ãƒªã‚¹ãƒˆã®æ›´æ–°
+    [DllImport("HapticsDirect")] public static extern void resetContactPointInfo(string configName); //!< ã‚³ãƒ³ã‚¿ã‚¯ãƒˆãƒã‚¤ãƒ³ãƒˆæƒ…å ±ãƒªã‚¹ãƒˆã‚’ãƒªã‚»ãƒƒãƒˆ
+    [DllImport("HapticsDirect")] public static extern void setVibrationValues(string configName, double[] direction3, double magnitude, double frequency, double time); //!< æŒ¯å‹•ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’è¨­å®šã™ã‚‹
+    [DllImport("HapticsDirect")] public static extern void setSpringValues(string configName, double[] anchor, double magnitude); //!< ã‚¹ãƒ—ãƒªãƒ³ã‚°FXã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’è¨­å®šã™ã‚‹
+    [DllImport("HapticsDirect")] public static extern void setConstantForceValues(string configName, double[] direction, double magnitude); //!< ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒ•ã‚©ãƒ¼ã‚¹FXã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’è¨­å®šã™ã‚‹
     [DllImport("HapticsDirect")] public static extern void setGravityForce(string configName, double[] gForce3);
     //Cleanup functions
     //! Disconnects from all devices.
@@ -96,7 +96,7 @@ public class CustomHapticEditor
 
 
 
-    private Vector3 Kijunten;
+    
 
     private GameObject collideObj;
 
@@ -121,13 +121,13 @@ public class CustomHapticEditor
     double[] temp_double_array_taku = new double[3];
 
 
-    // === Virtual Coupling ’Ç‰Á ===
-    private Vector3 virtualProxyPos;     // ‰¼‘zS‘©“_‚ÌˆÊ’u
-    private Vector3 virtualProxyVel;     // ‰¼‘zS‘©“_‚Ì‘¬“x
-    private float hapticDt = 0.001f;     // Touch§ŒäüŠú(1kHzŠî€)
-    private float stiffness = 1200.0f;   // ƒoƒl’è”
-    private float damping = 20.0f;       // ƒ_ƒ“ƒp’è”
-    private float maxForce = 3.0f;       // —Í‚ÌãŒÀiNj
+    //  è¿½åŠ ã—ãŸãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+    private Vector3 virtualProxyPos;     // ä»®æƒ³æ‹˜æŸç‚¹ã®ä½ç½®
+    private Vector3 virtualProxyVel;     // ä»®æƒ³æ‹˜æŸç‚¹ã®é€Ÿåº¦
+    private float hapticDt = 0.001f;     // Touchåˆ¶å¾¡å‘¨æœŸ(1kHzåŸºæº–)
+    private float stiffness = 1200.0f;   // ãƒãƒå®šæ•°
+    private float damping = 20.0f;       // ãƒ€ãƒ³ãƒ‘å®šæ•°
+    private float maxForce = 3.0f;       // åŠ›ã®ä¸Šé™ï¼ˆNï¼‰
 
     private float currentPenetrationDistance = 0f;
     private Vector3 currentPenetrationDirection = Vector3.zero;
@@ -150,6 +150,7 @@ public class CustomHapticEditor
 
         ResetMoveBase();
     }
+    // è¿½åŠ ã—ãŸé–¢æ•°ã€€æ“ä½œã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ä½ç½®ã‚’ä¿å­˜ã—ã€æ“ä½œã™ã‚‹éš›ã„ã¡ã„ã¡åˆæœŸä½ç½®ã«æˆ»ã‚‹ã“ã¨ã¯ãªããªã£ãŸ
     private void ResetMoveBase()
     {
         if (visualizationMesh == null)
@@ -158,30 +159,30 @@ public class CustomHapticEditor
             return;
         }
 
-        // ‘I‘ğ‚µ‚½uŠÔ‚ÌƒIƒuƒWƒFƒNƒgˆÊ’u‚ğ•Û‘¶
+        // é¸æŠã—ãŸç¬é–“ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆä½ç½®ã‚’ä¿å­˜
         targetBasePosition = visualizationMesh.transform.position;
 
-        // ‘I‘ğ‚µ‚½uŠÔ‚ÌƒfƒoƒCƒXˆÊ’u‚ğ•Û‘¶
+        // é¸æŠã—ãŸç¬é–“ã®ãƒ‡ãƒã‚¤ã‚¹ä½ç½®ã‚’ä¿å­˜
         GetDeviceTransformationRaw();
         deviceBasePosition = DeviceTransformRaw.ExtractPosition();
 
-        // Šù‘¶ˆ—‚Æ‚ÌŒİŠ·—p
+        // æ—¢å­˜å‡¦ç†ã¨ã®äº’æ›ç”¨
         startingPosition.transform.position = visualizationMesh.transform.position;
         DeviceTransformRawWhenrefreshed = deviceBasePosition;
 
-        // Virtual Coupling —p
+        // Virtual Coupling ç”¨
         virtualProxyPos = visualizationMesh.transform.position;
         virtualProxyVel = Vector3.zero;
 
         hasMoveBase = true;
 
-        Debug.Log("ˆÚ“®Šî€‚ğXV‚µ‚Ü‚µ‚½: " + targetBasePosition);
+        Debug.Log("ç§»å‹•åŸºæº–ã‚’æ›´æ–°ã—ã¾ã—ãŸ: " + targetBasePosition);
     }
     public void setUp()
     {
         if (visualizationMesh == null)
         {
-            Debug.LogWarning("‘€ì‘ÎÛ‚ÌƒIƒuƒWƒFƒNƒg‚ª‘I‘ğ‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB");
+            Debug.LogWarning("æ“ä½œå¯¾è±¡ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒé¸æŠã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚");
             return;
         }
         initDevice(deviceIdentifier);
@@ -194,7 +195,7 @@ public class CustomHapticEditor
     {
         if (visualizationMesh == null)
         {
-            Debug.LogWarning("‘€ì‘ÎÛ‚ÌƒIƒuƒWƒFƒNƒg‚ª‘I‘ğ‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB");
+            Debug.LogWarning("æ“ä½œå¯¾è±¡ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒé¸æŠã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚");
             return;
         }
         initDevice(deviceIdentifier);
@@ -258,6 +259,7 @@ public class CustomHapticEditor
 
     public void UpdateTransform()
     {
+        // å¤‰æ›´ç‚¹ï¼šã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ä½ç½®ã‚’è¨˜æ†¶ã—ãã®ä½ç½®ã‹ã‚‰ã®ç§»å‹•ãŒå¯èƒ½ã«
         if (visualizationMesh == null || collisionMesh == null)
         {
             return;
@@ -273,10 +275,10 @@ public class CustomHapticEditor
 
         Vector3 deviceCurrentPosition = newMatrix.ExtractPosition();
 
-        // ‘I‘ğ‚©‚ç‚ÌƒfƒoƒCƒXˆÚ“®—Ê
+        // é¸æŠæ™‚ã‹ã‚‰ã®ãƒ‡ãƒã‚¤ã‚¹ç§»å‹•é‡
         Vector3 deviceDelta = deviceCurrentPosition - deviceBasePosition;
 
-        // ‘I‘ğ‚ÌƒIƒuƒWƒFƒNƒgˆÊ’u + ƒfƒoƒCƒXˆÚ“®—Ê
+        // é¸æŠæ™‚ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆä½ç½® + ãƒ‡ãƒã‚¤ã‚¹ç§»å‹•é‡
         Vector3 newObjectPosition = targetBasePosition + deviceDelta * 0.1f;
 
         Rigidbody rBody = collisionMesh.GetComponent<Rigidbody>();
@@ -297,63 +299,64 @@ public class CustomHapticEditor
     }
 
 
-    public void detectCollision()
+public void detectCollision()
+{
+    // å¤‰æ›´ç‚¹ï¼šã€€Physics.ComputePenetrationã‚’ç”¨ã„ã¦æ¥è§¦åˆ¤å®šã‚’è¡Œã†ã€€ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®ç¨®é¡ã«ã‹ã‹ã‚ã‚‰ãšåˆ¤å®šå¯èƒ½
+    bool isHitColliderOverlapped = false;
+
+    Collider myCollider = target.GetComponent<Collider>();
+    if (myCollider == null)
     {
-        bool isHitColliderOverlapped = false;
+        Debug.LogError("Target ã« Collider ãŒã‚ã‚Šã¾ã›ã‚“ã€‚");
+        return;
+    }
 
-        Collider myCollider = target.GetComponent<Collider>();
-        if (myCollider == null)
+    // è¿‘å‚ã®ã™ã¹ã¦ã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’å–å¾—ï¼ˆå¿…è¦ã«å¿œã˜ã¦ç¯„å›²èª¿æ•´ï¼‰
+    Collider[] nearbyColliders = Physics.OverlapSphere(target.transform.position, 1.0f);
+
+    foreach (Collider other in nearbyColliders)
+    {
+        if (other == myCollider) continue; // è‡ªåˆ†è‡ªèº«ã¯ç„¡è¦–
+
+        Vector3 direction;
+        float distance;
+
+        bool isColliding = Physics.ComputePenetration(
+            myCollider, target.transform.position, target.transform.rotation,
+            other, other.transform.position, other.transform.rotation,
+            out direction, out distance
+        );
+
+        if (isColliding)
         {
-            Debug.LogError("Target ‚É Collider ‚ª‚ ‚è‚Ü‚¹‚ñB");
-            return;
-        }
+            currentPenetrationDistance = distance;
+            currentPenetrationDirection = direction;
 
-        // ‹ß–T‚Ì‚·‚×‚Ä‚ÌƒRƒ‰ƒCƒ_[‚ğæ“¾i•K—v‚É‰‚¶‚Ä”ÍˆÍ’²®j
-        Collider[] nearbyColliders = Physics.OverlapSphere(target.transform.position, 1.0f);
 
-        foreach (Collider other in nearbyColliders)
-        {
-            if (other == myCollider) continue; // ©•ª©g‚Í–³‹
+            isHitColliderOverlapped = true;
 
-            Vector3 direction;
-            float distance;
-
-            bool isColliding = Physics.ComputePenetration(
-                myCollider, target.transform.position, target.transform.rotation,
-                other, other.transform.position, other.transform.rotation,
-                out direction, out distance
-            );
-
-            if (isColliding)
+            if (!isCollisionEnter)
             {
-                currentPenetrationDistance = distance;
-                currentPenetrationDirection = direction;
-
-
-                isHitColliderOverlapped = true;
-
-                if (!isCollisionEnter)
-                {
-                    collisionEnter();
-                    isCollisionEnter = true;
-                }
-
-                collisionStay(other);
-                collideObj = other.gameObject;
+                collisionEnter();
+                isCollisionEnter = true;
             }
-        }
 
-        // —£‚ê‚½‚Æ‚«‚Ìˆ—
-        if (isCollisionEnter && !isHitColliderOverlapped)
-        {
-            currentPenetrationDistance = 0f;
-            currentPenetrationDirection = Vector3.zero;
-
-            collisionExit();
-            isCollisionEnter = false;
-            collideObj = null;
+            collisionStay(other);
+            collideObj = other.gameObject;
         }
     }
+
+    // é›¢ã‚ŒãŸã¨ãã®å‡¦ç†
+    if (isCollisionEnter && !isHitColliderOverlapped)
+    {
+        currentPenetrationDistance = 0f;
+        currentPenetrationDirection = Vector3.zero;
+
+        collisionExit();
+        isCollisionEnter = false;
+        collideObj = null;
+    }
+}
 
 
     public void GetDeviceTransformationRaw()
@@ -427,9 +430,9 @@ public class CustomHapticEditor
             Vector3 CubeSurfacePosition = calculateCollisionPoint(collideObj.GetComponent<Collider>());
             Vector3 CubesurfacePositionFromStartingPosition = startingPosition.transform.InverseTransformPoint(CubeSurfacePosition);
 
-
+            
             //Debug.Log("tempPositionFromStartingPosition      " + CubesurfacePositionFromStartingPosition);
-            Vector3 AnchoredPosition = Adjustposition + DeviceTransformRawWhenrefreshed + (CubesurfacePositionFromStartingPosition * 10f);
+            Vector3 AnchoredPosition = Adjustposition + DeviceTransformRawWhenrefreshed+ (CubesurfacePositionFromStartingPosition * 10f);
             setAnchorPosition(deviceIdentifier, Vector3ToDoubleArray(AnchoredPosition));
             Debug.Log("Cubesurfaceposition   " + CubeSurfacePosition);
             Debug.Log("CubesurfacePositionFromStartingPosition" + CubesurfacePositionFromStartingPosition);
@@ -439,8 +442,7 @@ public class CustomHapticEditor
 
 
 
-        }
-        catch (NullReferenceException)
+        } catch (NullReferenceException)
         {
             //Debug.Log("Not detected any object");
         }
@@ -454,6 +456,7 @@ public class CustomHapticEditor
 
     public void UpdateForceOnCollision(Collider collider)
     {
+        // å¤‰æ›´ç‚¹ï¼šã€€meshã«æ¥è§¦ã—ãŸéš›ã®è§¦è¦šãƒ•ã‚£ãƒ¼ãƒ‰ãƒãƒƒã‚¯ã‚’èª¿æ•´ã™ã‚‹æ¡ä»¶åˆ†å²ã‚’ä½œæˆ
         int sFac, vFac, impCorrection;
         sFac = 1;
         vFac = 0;
@@ -471,23 +474,23 @@ public class CustomHapticEditor
 
             contInfo.MaterialMass = hapMat.hMass;
 
-            // ‚Ü‚¸Šî–{’l‚ğ“ü‚ê‚é
+            // ã¾ãšåŸºæœ¬å€¤ã‚’å…¥ã‚Œã‚‹
             contInfo.MaterialStiffness = hapMat.hStiffness * sFac;
             contInfo.MaterialDamping = hapMat.hDamping;
 
-            // Mesh ‚Ì‚Æ‚«‚¾‚¯ penetration ‚ğg‚Á‚Ä’²®
+            // Mesh ã®ã¨ãã ã‘ penetration ã‚’ä½¿ã£ã¦èª¿æ•´
             if (getAttachedColliderType(collider) == colliderTypes.Mesh)
             {
                 float penetration = currentPenetrationDistance;
                 Debug.Log("penetration = " + penetration);
 
-                // „«‚Í‘O‚æ‚èT‚¦‚ß‚É
+                // å‰›æ€§ã¯å‰ã‚ˆã‚Šæ§ãˆã‚ã«
                 contInfo.MaterialStiffness *= penetration * 1000f;
 
-                // ƒ_ƒ“ƒsƒ“ƒO‚ğ’Ç‰Á‚µ‚ÄU“®‚ğ—}‚¦‚é
+                // ãƒ€ãƒ³ãƒ”ãƒ³ã‚°ã‚’è¿½åŠ ã—ã¦æŒ¯å‹•ã‚’æŠ‘ãˆã‚‹
                 contInfo.MaterialDamping = hapMat.hDamping + penetration * 300f;
 
-                // ãŒÀ‚ğ‚©‚¯‚Ä–\‚ê‚ğ–h‚®
+                // ä¸Šé™ã‚’ã‹ã‘ã¦æš´ã‚Œã‚’é˜²ã
                 contInfo.MaterialStiffness = Mathf.Clamp(contInfo.MaterialStiffness, 0f, 1.0f);
                 contInfo.MaterialDamping = Mathf.Clamp(contInfo.MaterialDamping, 0f, 1.2f);
             }
@@ -582,6 +585,7 @@ public class CustomHapticEditor
 
     private Vector3 calculateCollisionPoint(Collider hitCollider)
     {
+        // å¤‰æ›´ç‚¹ï¼šåˆ¤å®šå¯èƒ½ãªã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®ç¨®é¡ãŒå¢—ãˆãŸã“ã¨ã€€partnerã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ï¼ˆæ¥è§¦ã•ã‚Œã‚‹å´ï¼‰ã®Boxã¯å…ˆè¡Œç ”ç©¶ã®å†…å®¹ã€MeshãŒè‡ªåˆ†ã®æˆæœã§ã‚ã‚‹
         Collider partner = hitCollider;
         Vector3 collisionPoint = new Vector3(999, 999, 999);
         const float meshContactMargin = 0.002f;
@@ -589,135 +593,135 @@ public class CustomHapticEditor
         switch (getAttachedColliderType(visualizationMesh))
         {
             case colliderTypes.Box:
+            {
+                switch (getAttachedColliderType(partner))
                 {
-                    switch (getAttachedColliderType(partner))
+                    case colliderTypes.Box:
                     {
-                        case colliderTypes.Box:
-                            {
-                                BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
-                                collisionPoint = boxChouten.getClosestPoint(visualizationMesh);
-                                break;
-                            }
-
-                        case colliderTypes.Mesh:
-                            {
-                                MeshCollider meshCollider = partner as MeshCollider;
-                                if (meshCollider != null)
-                                {
-                                    MeshSDF meshSdf = new MeshSDF(meshCollider);
-
-                                    Vector3 cp, normal;
-                                    float d = meshSdf.SignedDistance(
-                                        visualizationMesh.transform.position,
-                                        out cp,
-                                        out normal
-                                    );
-
-
-
-                                    collisionPoint = cp;
-
-                                }
-                                break;
-                            }
+                        BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
+                        collisionPoint = boxChouten.getClosestPoint(visualizationMesh);
+                        break;
                     }
-                    break;
+
+                    case colliderTypes.Mesh:
+                    {
+                        MeshCollider meshCollider = partner as MeshCollider;
+                        if (meshCollider != null)
+                        {
+                            MeshSDF meshSdf = new MeshSDF(meshCollider);
+
+                            Vector3 cp, normal;
+                            float d = meshSdf.SignedDistance(
+                                visualizationMesh.transform.position,
+                                out cp,
+                                out normal
+                            );
+
+                            
+                            
+                            collisionPoint = cp;
+                            
+                        }
+                        break;
+                    }
                 }
+                break;
+            }
 
             case colliderTypes.Capsule:
+            {
+                switch (getAttachedColliderType(partner))
                 {
-                    switch (getAttachedColliderType(partner))
+                    case colliderTypes.Box:
                     {
-                        case colliderTypes.Box:
-                            {
-                                BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
-                                collisionPoint = boxChouten.getClosestPoint(visualizationMesh);
-                                break;
-                            }
-
-                        case colliderTypes.Mesh:
-                            {
-                                MeshCollider meshCollider = partner as MeshCollider;
-                                if (meshCollider != null)
-                                {
-                                    MeshSDF meshSdf = new MeshSDF(meshCollider);
-
-                                    Vector3 cp, normal;
-                                    float d = meshSdf.SignedDistance(
-                                        visualizationMesh.transform.position,
-                                        out cp,
-                                        out normal
-                                    );
-
-
-
-                                    collisionPoint = cp;
-
-                                }
-                                break;
-                            }
+                        BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
+                        collisionPoint = boxChouten.getClosestPoint(visualizationMesh);
+                        break;
                     }
-                    break;
+
+                    case colliderTypes.Mesh:
+                    {
+                        MeshCollider meshCollider = partner as MeshCollider;
+                        if (meshCollider != null)
+                        {
+                            MeshSDF meshSdf = new MeshSDF(meshCollider);
+
+                            Vector3 cp, normal;
+                            float d = meshSdf.SignedDistance(
+                                visualizationMesh.transform.position,
+                                out cp,
+                                out normal
+                            );
+
+                            
+                            
+                            collisionPoint = cp;
+                            
+                        }
+                        break;
+                    }
                 }
+                break;
+            }
 
             case colliderTypes.Sphere:
+            {
+                switch (getAttachedColliderType(partner))
                 {
-                    switch (getAttachedColliderType(partner))
+                    case colliderTypes.Box:
                     {
-                        case colliderTypes.Box:
-                            {
-                                BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
-                                collisionPoint = boxChouten.getClosestPoint(visualizationMesh);
-                                break;
-                            }
-
-                        case colliderTypes.Mesh:
-                            {
-                                MeshCollider meshCollider = partner as MeshCollider;
-                                if (meshCollider != null)
-                                {
-                                    MeshSDF meshSdf = new MeshSDF(meshCollider);
-
-                                    Vector3 cp, normal;
-                                    float d = meshSdf.SignedDistance(
-                                        visualizationMesh.transform.position,
-                                        out cp,
-                                        out normal
-                                    );
-
-
-
-                                    collisionPoint = cp;
-
-                                }
-                                break;
-                            }
+                        BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
+                        collisionPoint = boxChouten.getClosestPoint(visualizationMesh);
+                        break;
                     }
-                    break;
+
+                    case colliderTypes.Mesh:
+                    {
+                        MeshCollider meshCollider = partner as MeshCollider;
+                        if (meshCollider != null)
+                        {
+                            MeshSDF meshSdf = new MeshSDF(meshCollider);
+
+                            Vector3 cp, normal;
+                            float d = meshSdf.SignedDistance(
+                                visualizationMesh.transform.position,
+                                out cp,
+                                out normal
+                            );
+
+                            
+                            
+                            collisionPoint = cp;
+                            
+                        }
+                        break;
+                    }
                 }
+                break;
+            }
 
             case colliderTypes.Mesh:
+            {
+                switch (getAttachedColliderType(partner))
                 {
-                    switch (getAttachedColliderType(partner))
+                    case colliderTypes.Box:
                     {
-                        case colliderTypes.Box:
-                            {
-                                BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
-                                collisionPoint = boxChouten.getClosestPoint(visualizationMesh);
-                                break;
-                            }
-
-                        case colliderTypes.Mesh:
-                            {
-                                if (partner != null)
-                                {
-                                    collisionPoint = partner.ClosestPoint(visualizationMesh.transform.position);
-                                }
-                                break;
-                            }
+                        BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
+                        collisionPoint = boxChouten.getClosestPoint(visualizationMesh);
+                        break;
                     }
-                    break;
+
+                    case colliderTypes.Mesh:
+                    {
+                        if (partner != null)
+                        {
+                            collisionPoint = partner.ClosestPoint(visualizationMesh.transform.position);
+                        }
+                        break;
+                    }
                 }
+                break;
+            }
         }
 
         return collisionPoint;
@@ -725,6 +729,7 @@ public class CustomHapticEditor
 
     private Vector3 calculateCollisionVector(Collider hitCollider)
     {
+        // å¤‰æ›´ç‚¹ï¼šåˆ¤å®šå¯èƒ½ãªã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®ç¨®é¡ãŒå¢—ãˆãŸã“ã¨ã€€partnerã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ï¼ˆæ¥è§¦ã•ã‚Œã‚‹å´ï¼‰ã®Boxã¯å…ˆè¡Œç ”ç©¶ã®å†…å®¹ã€MeshãŒè‡ªåˆ†ã®æˆæœã§ã‚ã‚‹
         Collider partner = hitCollider;
         Vector3 collisionVector = Vector3.zero;
         const float meshContactMargin = 0.01f;
@@ -732,110 +737,110 @@ public class CustomHapticEditor
         switch (getAttachedColliderType(visualizationMesh))
         {
             case colliderTypes.Box:
+            {
+                switch (getAttachedColliderType(partner))
                 {
-                    switch (getAttachedColliderType(partner))
+                    case colliderTypes.Box:
                     {
-                        case colliderTypes.Box:
-                            {
-                                BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
-                                boxChouten.getClosestPoint(visualizationMesh);
-                                collisionVector = boxChouten.getHousenOfClosestSurface();
-                                break;
-                            }
-
-                        case colliderTypes.Mesh:
-                            {
-                                if (currentPenetrationDirection.sqrMagnitude > 1e-8f)
-                                {
-                                    collisionVector = currentPenetrationDirection.normalized;
-                                }
-                                break;
-                            }
+                        BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
+                        boxChouten.getClosestPoint(visualizationMesh);
+                        collisionVector = boxChouten.getHousenOfClosestSurface();
+                        break;
                     }
-                    break;
+
+                    case colliderTypes.Mesh:
+                    {
+                        if (currentPenetrationDirection.sqrMagnitude > 1e-8f)
+                        {
+                            collisionVector = currentPenetrationDirection.normalized;
+                        }
+                        break;
+                    }
                 }
+                break;
+            }
 
             case colliderTypes.Capsule:
+            {
+                switch (getAttachedColliderType(partner))
                 {
-                    switch (getAttachedColliderType(partner))
+                    case colliderTypes.Box:
                     {
-                        case colliderTypes.Box:
-                            {
-                                BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
-                                boxChouten.getClosestPoint(visualizationMesh);
-                                collisionVector = boxChouten.getHousenOfClosestSurface();
-                                break;
-                            }
-
-                        case colliderTypes.Mesh:
-                            {
-                                if (currentPenetrationDirection.sqrMagnitude > 1e-8f)
-                                {
-                                    collisionVector = currentPenetrationDirection.normalized;
-                                }
-                                break;
-                            }
+                        BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
+                        boxChouten.getClosestPoint(visualizationMesh);
+                        collisionVector = boxChouten.getHousenOfClosestSurface();
+                        break;
                     }
-                    break;
+
+                    case colliderTypes.Mesh:
+                    {
+                        if (currentPenetrationDirection.sqrMagnitude > 1e-8f)
+                        {
+                            collisionVector = currentPenetrationDirection.normalized;
+                        }
+                        break;
+                    }
                 }
+                break;
+            }
 
             case colliderTypes.Sphere:
+            {
+                switch (getAttachedColliderType(partner))
                 {
-                    switch (getAttachedColliderType(partner))
+                    case colliderTypes.Box:
                     {
-                        case colliderTypes.Box:
-                            {
-                                BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
-                                boxChouten.getClosestPoint(visualizationMesh);
-                                collisionVector = boxChouten.getHousenOfClosestSurface();
-                                break;
-                            }
-
-                        case colliderTypes.Mesh:
-                            {
-                                if (currentPenetrationDirection.sqrMagnitude > 1e-8f)
-                                {
-                                    collisionVector = currentPenetrationDirection.normalized;
-                                }
-                                break;
-                            }
+                        BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
+                        boxChouten.getClosestPoint(visualizationMesh);
+                        collisionVector = boxChouten.getHousenOfClosestSurface();
+                        break;
                     }
-                    break;
+
+                    case colliderTypes.Mesh:
+                    {
+                        if (currentPenetrationDirection.sqrMagnitude > 1e-8f)
+                        {
+                            collisionVector = currentPenetrationDirection.normalized;
+                        }
+                        break;
+                    }
                 }
+                break;
+            }
 
             case colliderTypes.Mesh:
+            {
+                switch (getAttachedColliderType(partner))
                 {
-                    switch (getAttachedColliderType(partner))
+                    case colliderTypes.Box:
                     {
-                        case colliderTypes.Box:
-                            {
-                                BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
-                                boxChouten.getClosestPoint(visualizationMesh);
-                                collisionVector = boxChouten.getHousenOfClosestSurface();
-                                break;
-                            }
-
-                        case colliderTypes.Mesh:
-                            {
-                                if (partner != null)
-                                {
-                                    Vector3 cp = partner.ClosestPoint(visualizationMesh.transform.position);
-                                    Vector3 dir = visualizationMesh.transform.position - cp;
-
-                                    if (dir.sqrMagnitude > 1e-8f)
-                                    {
-                                        collisionVector = dir.normalized;
-                                    }
-                                    else if (currentPenetrationDirection.sqrMagnitude > 1e-8f)
-                                    {
-                                        collisionVector = currentPenetrationDirection.normalized;
-                                    }
-                                }
-                                break;
-                            }
+                        BoxChouten boxChouten = new BoxChouten(hitCollider, visualizationMesh);
+                        boxChouten.getClosestPoint(visualizationMesh);
+                        collisionVector = boxChouten.getHousenOfClosestSurface();
+                        break;
                     }
-                    break;
+
+                    case colliderTypes.Mesh:
+                    {
+                        if (partner != null)
+                        {
+                            Vector3 cp = partner.ClosestPoint(visualizationMesh.transform.position);
+                            Vector3 dir = visualizationMesh.transform.position - cp;
+
+                            if (dir.sqrMagnitude > 1e-8f)
+                            {
+                                collisionVector = dir.normalized;
+                            }
+                            else if (currentPenetrationDirection.sqrMagnitude > 1e-8f)
+                            {
+                                collisionVector = currentPenetrationDirection.normalized;
+                            }
+                        }
+                        break;
+                    }
                 }
+                break;
+            }
         }
 
         return collisionVector;
@@ -859,7 +864,7 @@ public class CustomHapticEditor
             out normal
         );
 
-        // d < 0 ‚Ì‚Æ‚«‚¾‚¯‚ß‚è‚İ
+        // d < 0 ã®ã¨ãã ã‘ã‚ã‚Šè¾¼ã¿
         float penetration = Mathf.Max(0f, -d);
         return penetration;
     }
