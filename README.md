@@ -38,13 +38,13 @@ Asset/Editor
 
 \-Unityのエディタ拡張についてのコードです．
 
-&#x20; Editor/EditorClass
+&#x20;  Editor/EditorClass
 
-&#x20; -Unityエディタ上でのオブジェクトの操作と衝突判定を定義しているクラスです．
+&#x20;  -Unityエディタ上でのオブジェクトの操作と衝突判定を定義しているクラスです．
 
-&#x20; Editor/EditorWindow
+&#x20;  Editor/EditorWindow
 
-&#x20; -専用のカスタムウィンドウを設定しています．
+&#x20;  -専用のカスタムウィンドウを設定しています．
 
 
 
@@ -79,6 +79,28 @@ Asset/Experiments
 比較用として，先行研究時点でのプロジェクトを'previous-research' ブランチに保存しています．
 
 現在の'main' ブランチは，本研究の最新版を配置しています．
+
+
+
+また，先行研究と本研究の差異として、本研究で新たに実装した内容を以下に記載します．
+
+
+
+‐ メッシュオブジェクトの操作と衝突判定の実装　EditorClass/MeshSDF.cs と EditorClass/CustomHapticEditor.csのcalculateCollisionPoint関数，calculateCollisionVector関数
+
+
+
+‐ オブジェクトを操作する際にオブジェクトがある位置から操作ができるように変更
+
+　　先行研究では一度初期位置に戻ってから操作を開始していたため、利便性が悪かった
+
+　　EditorClass/CustomHapticEditor.cs のResetMoveBase関数とUpdateTransform関数
+
+
+
+‐ 専用のカスタムウィンドウの情報追加　EditorWindow/MainHapticEditorWindow.cs
+
+
 
 
 
