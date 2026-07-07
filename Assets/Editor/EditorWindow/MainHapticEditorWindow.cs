@@ -58,33 +58,44 @@ public class MainHapticEditorWindow : EditorWindow
     void OnSelectionChange()
     {
         DebugToEditor("選択オブジェクトが変更されました");
+
+        custom.StopHapticControl();
+
         custom.VisualizationMeshPub = Selection.activeGameObject;
         custom.CollisionMeshPub = Selection.activeGameObject;
         custom.setTarget(Selection.activeGameObject);
+
+        DebugToEditor("選択変更によりTouch操作を停止しました");
         Repaint();
     }
 
     private void OnGUI()
     {
-        GUILayout.Label("操作したいオブジェクトをクリックしてSetUPボタンを押してください", EditorStyles.boldLabel);
-        GUILayout.Space(5);
-        if (GUILayout.Button("SetUP"))
-        {
-            custom.setUp();
-            DebugToEditor("SetUPボタンが押されました");
-        }
-           
-        EditorGUILayout.ObjectField(custom.VisualizationMeshPub, typeof(GameObject), true);
-        EditorGUILayout.ObjectField(custom.CollisionMeshPub, typeof(GameObject), true);
+        GUILayout.Label("1. Hierarchyから操作したいオブジェクトを選択してください", EditorStyles.boldLabel);
 
-        GUILayout.Space(5);
-        GUILayout.Label("接続解除する際はDisconnectボタンを押してください", EditorStyles.boldLabel);
-        GUILayout.Space(5);
-        if (GUILayout.Button("Disconnect"))
+        EditorGUILayout.ObjectField("操作対象", custom.VisualizationMeshPub, typeof(GameObject), true);
+
+        GUILayout.Space(10);
+        GUILayout.Label("2. Touch操作", EditorStyles.boldLabel);
+
+        GUIStyle largeButtonStyle = new GUIStyle(GUI.skin.button);
+        largeButtonStyle.fontSize = 15;
+        largeButtonStyle.fixedHeight = 48;
+
+        if (GUILayout.Button("Touch操作開始", largeButtonStyle))
         {
-            CustomHapticEditor.disconnectAllDevices();
-            DebugToEditor("Disconnectボタンが押されました");
+            custom.StartHapticControl();
+            DebugToEditor("Touch操作を開始しました");
         }
+
+        GUILayout.Space(6);
+
+        if (GUILayout.Button("Touch操作停止", largeButtonStyle))
+        {
+            custom.StopHapticControl();
+            DebugToEditor("Touch操作を停止しました");
+        }
+
 
         // デバイス名表示
         GUILayout.Space(5);
@@ -116,6 +127,15 @@ public class MainHapticEditorWindow : EditorWindow
         else
         {
             GUILayout.Label("オブジェクトが選択されていません。");
+        }
+
+        GUILayout.Space(15);
+        GUILayout.Label("詳細操作", EditorStyles.boldLabel);
+
+        if (GUILayout.Button("デバイス切断", GUILayout.Height(24)))
+        {
+            custom.DisconnectDevice();
+            DebugToEditor("デバイスを切断しました");
         }
 
         // デバッグログ欄

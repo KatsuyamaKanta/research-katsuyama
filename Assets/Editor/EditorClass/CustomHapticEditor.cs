@@ -135,6 +135,8 @@ public class CustomHapticEditor
     private Vector3 targetBasePosition;
     private Vector3 deviceBasePosition;
     private bool hasMoveBase = false;
+    private bool isHapticControlEnabled = false;
+    private bool isDeviceReady = false;
 
     public CustomHapticEditor(GameObject startingPosition, GameObject positionZero)
     {
@@ -144,33 +146,60 @@ public class CustomHapticEditor
 
     public void setTarget(GameObject newTarget)
     {
-        this.target = newTarget;
-        this.visualizationMesh = newTarget;
-        this.collisionMesh = newTarget;
+        target = newTarget;
+        visualizationMesh = newTarget;
+        collisionMesh = newTarget;
 
-        ResetMoveBase();
+        // 選択しただけではTouch操作しない
+        isHapticControlEnabled = false;
+        hasMoveBase = false;
+
+        ContactPointsInfo.Clear();
+
+        if (isDeviceReady)
+        {
+            resetContactPointInfo(deviceIdentifier);
+        }
+
+        if (newTarget != null)
+        {
+            Debug.Log("操作対象候補を設定しました: " + newTarget.name);
+        }
     }
     // 追加した関数　操作したオブジェクトの位置を保存し、操作する際いちいち初期位置に戻ることはなくなった
     private void ResetMoveBase()
     {
-        if (visualizationMesh == null)
+        if (visualizationMesh == null || startingPosition == null)
         {
             hasMoveBase = false;
             return;
         }
 
-        // 選択した瞬間のオブジェクト位置を保存
-        targetBasePosition = visualizationMesh.transform.position;
+        Vector3 currentTargetPosition = visualizationMesh.transform.position;
 
-        // 選択した瞬間のデバイス位置を保存
+        if (IsInvalid(currentTargetPosition))
+        {
+            Debug.LogError("ResetMoveBase: visualizationMesh の位置が NaN/Infinity です。基準を設定できません。");
+            hasMoveBase = false;
+            return;
+        }
+
         GetDeviceTransformationRaw();
-        deviceBasePosition = DeviceTransformRaw.ExtractPosition();
+        Vector3 currentDevicePosition = DeviceTransformRaw.ExtractPosition();
 
-        // 既存処理との互換用
+        if (IsInvalid(currentDevicePosition))
+        {
+            Debug.LogError("ResetMoveBase: deviceBasePosition が NaN/Infinity です。基準を設定できません。");
+            hasMoveBase = false;
+            return;
+        }
+
+        targetBasePosition = currentTargetPosition;
+        deviceBasePosition = currentDevicePosition;
+
         startingPosition.transform.position = visualizationMesh.transform.position;
         DeviceTransformRawWhenrefreshed = deviceBasePosition;
 
-        // Virtual Coupling 用
         virtualProxyPos = visualizationMesh.transform.position;
         virtualProxyVel = Vector3.zero;
 
@@ -180,15 +209,25 @@ public class CustomHapticEditor
     }
     public void setUp()
     {
-        if (visualizationMesh == null)
+        EnsureDeviceReady();
+    }
+
+    private bool EnsureDeviceReady()
+    {
+        if (isDeviceReady)
         {
-            Debug.LogWarning("操作対象のオブジェクトが選択されていません。");
-            return;
+            return true;
         }
-        initDevice(deviceIdentifier);
+
+        int result = initDevice(deviceIdentifier);
         startSchedulers();
-        ResetMoveBase();
-        startRunning = !startRunning;
+
+        startRunning = true;
+        isDeviceReady = true;
+
+        Debug.Log("Touchデバイスを初期化しました。 result = " + result);
+
+        return true;
     }
 
     public void refresh()
@@ -211,18 +250,84 @@ public class CustomHapticEditor
     // Update is called once per frame
     public void Update()
     {
-        if (startRunning)
+        if (!startRunning)
         {
-            UpdateDeviceInformation();
-            UpdateTransform();
-            detectCollision();
-            SendContactpoints();
+            return;
+        }
+
+        // デバイス情報だけは更新してよい
+        UpdateDeviceInformation();
+
+        // ここから先は「操作ON」のときだけ
+        if (!isHapticControlEnabled)
+        {
+            return;
+        }
+
+        UpdateTransform();
+        detectCollision();
+        SendContactpoints();
+        ContactPointsInfo.Clear();
+    }
+
+    // 追加した関数　ハプティックで操作するかどうかのオンオフを関数にて行う形に
+    public void StartHapticControl()
+    {
+        if (visualizationMesh == null || collisionMesh == null)
+        {
+            Debug.LogWarning("操作対象が選択されていません。");
+            return;
+        }
+
+        // デバイス未接続なら、ここで自動接続する
+        if (!EnsureDeviceReady())
+        {
+            Debug.LogWarning("Touchデバイスの初期化に失敗したため、操作を開始できません。");
+            return;
+        }
+
+        // 操作開始した瞬間の位置を基準にする
+        ResetMoveBase();
+
+        if (!hasMoveBase)
+        {
+            Debug.LogWarning("移動基準を設定できなかったため、Touch操作を開始しません。");
+            return;
+        }
+
+        isHapticControlEnabled = true;
+
+        Debug.Log("ハプティック操作を開始しました: " + visualizationMesh.name);
+    }
+    public void StopHapticControl()
+    {
+        isHapticControlEnabled = false;
+        hasMoveBase = false;
+
+        ContactPointsInfo.Clear();
+
+        if (isDeviceReady)
+        {
+            resetContactPointInfo(deviceIdentifier);
+        }
+
+        Debug.Log("ハプティック操作を停止しました。");
+    }
+
+    public void DisconnectDevice()
+    {
+        StopHapticControl();
+
+        if (isDeviceReady)
+        {
+            disconnectAllDevices();
+            isDeviceReady = false;
+            startRunning = false;
+            hasMoveBase = false;
+
             ContactPointsInfo.Clear();
-            var view = SceneView.lastActiveSceneView;
-            if (view != null)
-            {
-                Debug.Log("sceneView" + view.camera.transform.position);
-            }
+
+            Debug.Log("Touchデバイスを切断しました。");
         }
     }
 
@@ -257,14 +362,16 @@ public class CustomHapticEditor
 
     }
 
+    // 変更点：オブジェクトの位置を記憶しその位置からの移動が可能に
     public void UpdateTransform()
     {
-        // 変更点：オブジェクトの位置を記憶しその位置からの移動が可能に
+        // 操作対象が未設定なら何もしない
         if (visualizationMesh == null || collisionMesh == null)
         {
             return;
         }
 
+        // 移動基準が未設定なら、ここで再設定する
         if (!hasMoveBase)
         {
             ResetMoveBase();
@@ -273,33 +380,82 @@ public class CustomHapticEditor
 
         Matrix4x4 newMatrix = DeviceTransformRaw;
 
+        // デバイスの現在位置を取得
         Vector3 deviceCurrentPosition = newMatrix.ExtractPosition();
+
+        // デバイス位置が壊れていたら、このフレームの更新を中止
+        if (IsInvalid(deviceCurrentPosition))
+        {
+            Debug.LogError("UpdateTransform: deviceCurrentPosition が NaN/Infinity です。");
+            return;
+        }
+
+        // 基準デバイス位置が壊れていたら、移動基準を作り直す
+        if (IsInvalid(deviceBasePosition))
+        {
+            Debug.LogError("UpdateTransform: deviceBasePosition が NaN/Infinity です。ResetMoveBase を実行します。");
+            ResetMoveBase();
+            return;
+        }
+
+        // 基準オブジェクト位置が壊れていたら、更新を中止
+        if (IsInvalid(targetBasePosition))
+        {
+            Debug.LogError("UpdateTransform: targetBasePosition が NaN/Infinity です。");
+            return;
+        }
 
         // 選択時からのデバイス移動量
         Vector3 deviceDelta = deviceCurrentPosition - deviceBasePosition;
 
+        if (IsInvalid(deviceDelta))
+        {
+            Debug.LogError("UpdateTransform: deviceDelta が NaN/Infinity です。");
+            return;
+        }
+
         // 選択時のオブジェクト位置 + デバイス移動量
         Vector3 newObjectPosition = targetBasePosition + deviceDelta * 0.1f;
+
+        if (IsInvalid(newObjectPosition))
+        {
+            Debug.LogError("UpdateTransform: newObjectPosition が NaN/Infinity です。位置更新を中止します。");
+            return;
+        }
+
+        // 回転もチェックする
+        Quaternion newRotation = newMatrix.ExtractRotation();
+
+        if (IsInvalid(newRotation))
+        {
+            Debug.LogError("UpdateTransform: newRotation が NaN/Infinity です。回転更新を中止し、位置だけ更新します。");
+
+            Rigidbody rBodyOnlyPos = collisionMesh.GetComponent<Rigidbody>();
+            if (rBodyOnlyPos != null)
+            {
+                rBodyOnlyPos.position = newObjectPosition;
+                rBodyOnlyPos.drag = 0;
+            }
+
+            visualizationMesh.transform.position = newObjectPosition;
+            return;
+        }
 
         Rigidbody rBody = collisionMesh.GetComponent<Rigidbody>();
 
         if (rBody != null)
         {
-            Vector3 deltaPos = newObjectPosition - rBody.position;
-            Vector3 newDirection = deltaPos.normalized;
-
-            rBody.position = newObjectPosition;
             rBody.drag = 0;
         }
 
         visualizationMesh.transform.SetPositionAndRotation(
             newObjectPosition,
-            newMatrix.ExtractRotation()
+            newRotation
         );
     }
 
 
-public void detectCollision()
+    public void detectCollision()
 {
     // 変更点：　Physics.ComputePenetrationを用いて接触判定を行う　コライダーの種類にかかわらず判定可能
     bool isHitColliderOverlapped = false;
@@ -935,6 +1091,29 @@ public void detectCollision()
         vec3out.z = (float)darray[2];
 
         return vec3out;
+    }
+
+    // オブジェクトが意図しない挙動を起こしたとき用のチェック関数
+    private static bool IsInvalid(Vector3 v)
+    {
+        return float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z) ||
+               float.IsInfinity(v.x) || float.IsInfinity(v.y) || float.IsInfinity(v.z);
+    }
+
+    private static bool IsInvalid(Quaternion q)
+    {
+        return float.IsNaN(q.x) || float.IsNaN(q.y) || float.IsNaN(q.z) || float.IsNaN(q.w) ||
+               float.IsInfinity(q.x) || float.IsInfinity(q.y) || float.IsInfinity(q.z) || float.IsInfinity(q.w);
+    }
+
+    private static Vector3 SafeNormalize(Vector3 v)
+    {
+        if (IsInvalid(v) || v.sqrMagnitude < 1e-8f)
+        {
+            return Vector3.zero;
+        }
+
+        return v.normalized;
     }
 
     private static double[] Vector3ToDoubleArray(Vector3 vec)
