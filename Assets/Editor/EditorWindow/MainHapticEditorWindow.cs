@@ -82,10 +82,20 @@ public class MainHapticEditorWindow : EditorWindow
         largeButtonStyle.fontSize = 15;
         largeButtonStyle.fixedHeight = 48;
 
-        if (GUILayout.Button("Touch操作開始", largeButtonStyle))
+        GUILayout.Label("現在の操作: " + custom.GetControlModeName(), EditorStyles.helpBox);
+
+        if (GUILayout.Button("Touchで移動開始", largeButtonStyle))
         {
             custom.StartHapticControl();
-            DebugToEditor("Touch操作を開始しました");
+            DebugToEditor("Touch移動操作を開始しました");
+        }
+
+        GUILayout.Space(6);
+
+        if (GUILayout.Button("Touchで拡大縮小開始", largeButtonStyle))
+        {
+            custom.StartScaleControl();
+            DebugToEditor("Touch拡大縮小操作を開始しました");
         }
 
         GUILayout.Space(6);
@@ -96,38 +106,10 @@ public class MainHapticEditorWindow : EditorWindow
             DebugToEditor("Touch操作を停止しました");
         }
 
-
         // デバイス名表示
         GUILayout.Space(5);
         GUILayout.Label($"現在のデバイス: {DeviceIdentifier}", EditorStyles.helpBox);
 
-        // スペースキー処理
-        var e = Event.current;
-        if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Space)
-        {
-            custom.refresh();
-            DebugToEditor("Spaceキーが押されました（refresh）");
-        }
-
-        // 座標リアルタイム表示
-        GUILayout.Space(10);
-        GUILayout.Label("■ 現在のターゲット座標（リアルタイム）", EditorStyles.boldLabel);
-        GameObject target = Selection.activeGameObject;
-        if (target != null)
-        {
-            Vector3 pos = target.transform.position;
-            GUILayout.Label($"World Position - X: {pos.x:F3} Y: {pos.y:F3} Z: {pos.z:F3}");
-
-            if (GUILayout.Button("座標をコピー"))
-            {
-                EditorGUIUtility.systemCopyBuffer = pos.ToString("F3");
-                DebugToEditor($"座標をコピーしました: {pos.ToString("F3")}");
-            }
-        }
-        else
-        {
-            GUILayout.Label("オブジェクトが選択されていません。");
-        }
 
         GUILayout.Space(15);
         GUILayout.Label("詳細操作", EditorStyles.boldLabel);

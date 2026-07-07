@@ -138,6 +138,30 @@ public class CustomHapticEditor
     private bool isHapticControlEnabled = false;
     private bool isDeviceReady = false;
 
+    // Touch操作の種類
+    private enum HapticControlMode
+    {
+        None,
+        Move,
+        Scale
+    }
+
+    private HapticControlMode controlMode = HapticControlMode.None;
+
+    // 拡大縮小用の基準値
+    private Vector3 scaleBaseDevicePosition;
+    private Vector3 scaleBaseLocalScale;
+    private bool hasScaleBase = false;
+
+    // 拡大縮小の感度
+    // getPosition は mm 単位なので、0.01f なら 100mm 動かすと約2倍
+    private float scaleSensitivity = 0.01f;
+
+    // 拡大縮小の制限
+    private float minScaleMultiplier = 0.2f;
+    private float maxScaleMultiplier = 5.0f;
+
+
     public CustomHapticEditor(GameObject startingPosition, GameObject positionZero)
     {
         this.startingPosition = startingPosition;
@@ -152,7 +176,10 @@ public class CustomHapticEditor
 
         // 選択しただけではTouch操作しない
         isHapticControlEnabled = false;
+        controlMode = HapticControlMode.None;
+
         hasMoveBase = false;
+        hasScaleBase = false;
 
         ContactPointsInfo.Clear();
 
@@ -166,6 +193,7 @@ public class CustomHapticEditor
             Debug.Log("操作対象候補を設定しました: " + newTarget.name);
         }
     }
+
     // 追加した関数　操作したオブジェクトの位置を保存し、操作する際いちいち初期位置に戻ることはなくなった
     private void ResetMoveBase()
     {
@@ -207,6 +235,48 @@ public class CustomHapticEditor
 
         Debug.Log("移動基準を更新しました: " + targetBasePosition);
     }
+
+    private void ResetScaleBase()
+    {
+        if (visualizationMesh == null)
+        {
+            hasScaleBase = false;
+            return;
+        }
+
+        if (!isDeviceReady)
+        {
+            hasScaleBase = false;
+            return;
+        }
+
+        double[] posArray = new double[3];
+        getPosition(deviceIdentifier, posArray);
+
+        Vector3 currentDevicePosition = DoubleArrayToVector3(posArray);
+        Vector3 currentScale = visualizationMesh.transform.localScale;
+
+        if (IsInvalid(currentDevicePosition))
+        {
+            Debug.LogError("ResetScaleBase: Touch位置が NaN/Infinity です。");
+            hasScaleBase = false;
+            return;
+        }
+
+        if (IsInvalid(currentScale))
+        {
+            Debug.LogError("ResetScaleBase: localScale が NaN/Infinity です。");
+            hasScaleBase = false;
+            return;
+        }
+
+        scaleBaseDevicePosition = currentDevicePosition;
+        scaleBaseLocalScale = currentScale;
+        hasScaleBase = true;
+
+        Debug.Log("拡大縮小基準を更新しました: device = " + scaleBaseDevicePosition + ", scale = " + scaleBaseLocalScale);
+    }
+
     public void setUp()
     {
         EnsureDeviceReady();
@@ -264,10 +334,22 @@ public class CustomHapticEditor
             return;
         }
 
-        UpdateTransform();
-        detectCollision();
-        SendContactpoints();
-        ContactPointsInfo.Clear();
+        if (controlMode == HapticControlMode.Scale)
+        {
+            UpdateScaleTransform();
+
+            // 拡大縮小中は衝突・触覚送信をしない
+            // まずはサイズ変更を安定させる
+            return;
+        }
+
+        if (controlMode == HapticControlMode.Move)
+        {
+            UpdateTransform();
+            detectCollision();
+            SendContactpoints();
+            ContactPointsInfo.Clear();
+        }
     }
 
     // 追加した関数　ハプティックで操作するかどうかのオンオフを関数にて行う形に
@@ -295,14 +377,53 @@ public class CustomHapticEditor
             return;
         }
 
+        controlMode = HapticControlMode.Move;
         isHapticControlEnabled = true;
 
-        Debug.Log("ハプティック操作を開始しました: " + visualizationMesh.name);
+        Debug.Log("Touch移動操作を開始しました: " + visualizationMesh.name);
     }
+
+    public void StartScaleControl()
+    {
+        if (visualizationMesh == null || collisionMesh == null)
+        {
+            Debug.LogWarning("操作対象が選択されていません。");
+            return;
+        }
+
+        // デバイス未接続なら、ここで自動接続する
+        if (!EnsureDeviceReady())
+        {
+            Debug.LogWarning("Touchデバイスの初期化に失敗したため、拡大縮小操作を開始できません。");
+            return;
+        }
+
+        // 拡大縮小開始時のTouch位置と現在スケールを基準にする
+        ResetScaleBase();
+
+        if (!hasScaleBase)
+        {
+            Debug.LogWarning("拡大縮小基準を設定できなかったため、Touch拡大縮小操作を開始しません。");
+            return;
+        }
+
+        // 拡大縮小中は過去の接触情報を残さない
+        ContactPointsInfo.Clear();
+        resetContactPointInfo(deviceIdentifier);
+
+        controlMode = HapticControlMode.Scale;
+        isHapticControlEnabled = true;
+
+        Debug.Log("Touch拡大縮小操作を開始しました: " + visualizationMesh.name);
+    }
+
     public void StopHapticControl()
     {
         isHapticControlEnabled = false;
+        controlMode = HapticControlMode.None;
+
         hasMoveBase = false;
+        hasScaleBase = false;
 
         ContactPointsInfo.Clear();
 
@@ -311,7 +432,22 @@ public class CustomHapticEditor
             resetContactPointInfo(deviceIdentifier);
         }
 
-        Debug.Log("ハプティック操作を停止しました。");
+        Debug.Log("Touch操作を停止しました。");
+    }
+
+    public string GetControlModeName()
+    {
+        switch (controlMode)
+        {
+            case HapticControlMode.Move:
+                return "Touch移動操作中";
+
+            case HapticControlMode.Scale:
+                return "Touch拡大縮小操作中";
+
+            default:
+                return "停止中";
+        }
     }
 
     public void DisconnectDevice()
@@ -323,7 +459,10 @@ public class CustomHapticEditor
             disconnectAllDevices();
             isDeviceReady = false;
             startRunning = false;
+
+            controlMode = HapticControlMode.None;
             hasMoveBase = false;
+            hasScaleBase = false;
 
             ContactPointsInfo.Clear();
 
@@ -454,65 +593,135 @@ public class CustomHapticEditor
         );
     }
 
-
-    public void detectCollision()
-{
-    // 変更点：　Physics.ComputePenetrationを用いて接触判定を行う　コライダーの種類にかかわらず判定可能
-    bool isHitColliderOverlapped = false;
-
-    Collider myCollider = target.GetComponent<Collider>();
-    if (myCollider == null)
+    private void UpdateScaleTransform()
     {
-        Debug.LogError("Target に Collider がありません。");
-        return;
-    }
+        if (visualizationMesh == null)
+        {
+            return;
+        }
 
-    // 近傍のすべてのコライダーを取得（必要に応じて範囲調整）
-    Collider[] nearbyColliders = Physics.OverlapSphere(target.transform.position, 1.0f);
+        if (!hasScaleBase)
+        {
+            ResetScaleBase();
+            return;
+        }
 
-    foreach (Collider other in nearbyColliders)
-    {
-        if (other == myCollider) continue; // 自分自身は無視
+        // UpdateDeviceInformation() で CurrentPosition は更新済み
+        Vector3 deviceCurrentPosition = CurrentPosition;
 
-        Vector3 direction;
-        float distance;
+        if (IsInvalid(deviceCurrentPosition))
+        {
+            Debug.LogError("UpdateScaleTransform: Touch位置が NaN/Infinity です。");
+            return;
+        }
 
-        bool isColliding = Physics.ComputePenetration(
-            myCollider, target.transform.position, target.transform.rotation,
-            other, other.transform.position, other.transform.rotation,
-            out direction, out distance
+        if (IsInvalid(scaleBaseDevicePosition))
+        {
+            Debug.LogError("UpdateScaleTransform: scaleBaseDevicePosition が NaN/Infinity です。");
+            ResetScaleBase();
+            return;
+        }
+
+        if (IsInvalid(scaleBaseLocalScale))
+        {
+            Debug.LogError("UpdateScaleTransform: scaleBaseLocalScale が NaN/Infinity です。");
+            return;
+        }
+
+        // Touchの上下方向の移動量を使う
+        // 上に動かすと拡大、下に動かすと縮小
+        float deviceDeltaY = deviceCurrentPosition.y - scaleBaseDevicePosition.y;
+
+        // 小さな手ブレは無視する
+        if (Mathf.Abs(deviceDeltaY) < 1.0f)
+        {
+            deviceDeltaY = 0.0f;
+        }
+
+        float scaleMultiplier = 1.0f + deviceDeltaY * scaleSensitivity;
+
+        scaleMultiplier = Mathf.Clamp(
+            scaleMultiplier,
+            minScaleMultiplier,
+            maxScaleMultiplier
         );
 
-        if (isColliding)
+        Vector3 newScale = scaleBaseLocalScale * scaleMultiplier;
+
+        if (IsInvalid(newScale))
         {
-            currentPenetrationDistance = distance;
-            currentPenetrationDirection = direction;
+            Debug.LogError("UpdateScaleTransform: newScale が NaN/Infinity です。");
+            return;
+        }
+
+        visualizationMesh.transform.localScale = newScale;
+
+#if UNITY_EDITOR
+        EditorUtility.SetDirty(visualizationMesh);
+        SceneView.RepaintAll();
+#endif
+    }
 
 
-            isHitColliderOverlapped = true;
+    public void detectCollision()
+    {
+        // 変更点：　Physics.ComputePenetrationを用いて接触判定を行う　コライダーの種類にかかわらず判定可能
+        bool isHitColliderOverlapped = false;
 
-            if (!isCollisionEnter)
+        Collider myCollider = target.GetComponent<Collider>();
+        if (myCollider == null)
+        {
+            Debug.LogError("Target に Collider がありません。");
+            return;
+        }
+
+        // 近傍のすべてのコライダーを取得（必要に応じて範囲調整）
+        float searchRadius = myCollider.bounds.extents.magnitude + 0.2f;
+        Collider[] nearbyColliders = Physics.OverlapSphere(target.transform.position, searchRadius);
+
+        foreach (Collider other in nearbyColliders)
+        {
+            if (other == myCollider) continue; // 自分自身は無視
+
+            Vector3 direction;
+            float distance;
+
+            bool isColliding = Physics.ComputePenetration(
+                myCollider, target.transform.position, target.transform.rotation,
+                other, other.transform.position, other.transform.rotation,
+                out direction, out distance
+            );
+
+            if (isColliding)
             {
-                collisionEnter();
-                isCollisionEnter = true;
-            }
+                currentPenetrationDistance = distance;
+                currentPenetrationDirection = direction;
 
-            collisionStay(other);
-            collideObj = other.gameObject;
+
+                isHitColliderOverlapped = true;
+
+                if (!isCollisionEnter)
+                {
+                    collisionEnter();
+                    isCollisionEnter = true;
+                }
+
+                collisionStay(other);
+                collideObj = other.gameObject;
+            }
+        }
+
+        // 離れたときの処理
+        if (isCollisionEnter && !isHitColliderOverlapped)
+        {
+            currentPenetrationDistance = 0f;
+            currentPenetrationDirection = Vector3.zero;
+
+            collisionExit();
+            isCollisionEnter = false;
+            collideObj = null;
         }
     }
-
-    // 離れたときの処理
-    if (isCollisionEnter && !isHitColliderOverlapped)
-    {
-        currentPenetrationDistance = 0f;
-        currentPenetrationDirection = Vector3.zero;
-
-        collisionExit();
-        isCollisionEnter = false;
-        collideObj = null;
-    }
-}
 
 
     public void GetDeviceTransformationRaw()
