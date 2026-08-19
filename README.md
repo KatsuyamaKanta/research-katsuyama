@@ -96,7 +96,7 @@ Asset/Experiments
 
 ‐ オブジェクトを操作する際にオブジェクトがある位置から操作ができるように変更
 
-　　先行研究では一度初期位置に戻ってから操作を開始していたため、利便性が悪かった
+　　先行研究では一度初期位置に戻ってから操作を開始していたため、操作性が悪かった
 
 　　EditorClass/CustomHapticEditor.cs のResetMoveBase関数とUpdateTransform関数
 
@@ -118,7 +118,7 @@ Asset/Experiments
 
 &#x20;        previous-research  2020.3.16f1
 
-　OS：Windows 10
+　OS：Windows 11
 
 　使用デバイス：3D Systems Touch
 
