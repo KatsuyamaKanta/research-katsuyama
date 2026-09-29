@@ -145,7 +145,8 @@ public class CustomHapticEditor
     {
         None,
         Move,
-        Scale
+        Scale,
+        Deform
     }
 
     private HapticControlMode controlMode = HapticControlMode.None;
@@ -168,6 +169,25 @@ public class CustomHapticEditor
     private Vector3 lastMeshNormalWorld;
     private bool hasLastMeshContact = false;
 
+    // 変形用の基準値
+    private Vector3 deformBaseDevicePosition;
+    private Vector3 deformBaseLocalScale;
+    private Quaternion deformBaseRotation;
+    private bool hasDeformBase = false;
+
+    // 変形開始時のオブジェクトのローカル軸をワールド方向として保存
+    private Vector3 deformBaseRight;
+    private Vector3 deformBaseUp;
+    private Vector3 deformBaseForward;
+
+    // 変形の感度
+    // getPosition は mm 単位なので、0.01f なら 100mm 動かすと約2倍
+    private float deformSensitivity = 0.01f;
+
+    // 変形倍率の制限
+    private float minDeformMultiplier = 0.2f;
+    private float maxDeformMultiplier = 5.0f;
+
 
     public CustomHapticEditor(GameObject startingPosition, GameObject positionZero)
     {
@@ -187,6 +207,7 @@ public class CustomHapticEditor
 
         hasMoveBase = false;
         hasScaleBase = false;
+        hasDeformBase = false;
 
         ContactPointsInfo.Clear();
 
@@ -284,6 +305,72 @@ public class CustomHapticEditor
         Debug.Log("拡大縮小基準を更新しました: device = " + scaleBaseDevicePosition + ", scale = " + scaleBaseLocalScale);
     }
 
+    private void ResetDeformBase()
+    {
+        if (visualizationMesh == null)
+        {
+            hasDeformBase = false;
+            return;
+        }
+
+        if (!isDeviceReady)
+        {
+            hasDeformBase = false;
+            return;
+        }
+
+        double[] posArray = new double[3];
+        getPosition(deviceIdentifier, posArray);
+
+        Vector3 currentDevicePosition = DoubleArrayToVector3(posArray);
+        Vector3 currentScale = visualizationMesh.transform.localScale;
+        Quaternion currentRotation = visualizationMesh.transform.rotation;
+
+        if (IsInvalid(currentDevicePosition))
+        {
+            Debug.LogError("ResetDeformBase: Touch位置が NaN/Infinity です。");
+            hasDeformBase = false;
+            return;
+        }
+
+        if (IsInvalid(currentScale))
+        {
+            Debug.LogError("ResetDeformBase: localScale が NaN/Infinity です。");
+            hasDeformBase = false;
+            return;
+        }
+
+        if (IsInvalid(currentRotation))
+        {
+            Debug.LogError("ResetDeformBase: rotation が NaN/Infinity です。");
+            hasDeformBase = false;
+            return;
+        }
+
+        deformBaseDevicePosition = currentDevicePosition;
+        deformBaseLocalScale = currentScale;
+        deformBaseRotation = currentRotation;
+        // 変形開始時点の「回転後オブジェクトのローカル軸」を保存する
+        deformBaseRight = visualizationMesh.transform.right.normalized;
+        deformBaseUp = visualizationMesh.transform.up.normalized;
+        deformBaseForward = visualizationMesh.transform.forward.normalized;
+
+        hasDeformBase = true;
+
+        Debug.Log(
+            "変形基準を更新しました: device = " +
+            deformBaseDevicePosition +
+            ", scale = " +
+            deformBaseLocalScale +
+            ", right = " +
+            deformBaseRight +
+            ", up = " +
+            deformBaseUp +
+            ", forward = " +
+            deformBaseForward
+        );
+    }
+
     public void setUp()
     {
         EnsureDeviceReady();
@@ -345,8 +432,15 @@ public class CustomHapticEditor
         {
             UpdateScaleTransform();
 
-            // 拡大縮小中は衝突・触覚送信をしない
-            // まずはサイズ変更を安定させる
+            // 拡大縮小中は衝突・触覚送信をしない           
+            return;
+        }
+
+        if (controlMode == HapticControlMode.Deform)
+        {
+            UpdateDeformTransform();
+
+            // 変形中は衝突・触覚送信をしない
             return;
         }
 
@@ -424,6 +518,37 @@ public class CustomHapticEditor
         Debug.Log("Touch拡大縮小操作を開始しました: " + visualizationMesh.name);
     }
 
+    public void StartDeformControl()
+    {
+        if (visualizationMesh == null || collisionMesh == null)
+        {
+            Debug.LogWarning("操作対象が選択されていません。");
+            return;
+        }
+
+        if (!EnsureDeviceReady())
+        {
+            Debug.LogWarning("Touchデバイスの初期化に失敗したため、変形操作を開始できません。");
+            return;
+        }
+
+        ResetDeformBase();
+
+        if (!hasDeformBase)
+        {
+            Debug.LogWarning("変形基準を設定できなかったため、Touch変形操作を開始しません。");
+            return;
+        }
+
+        ContactPointsInfo.Clear();
+        resetContactPointInfo(deviceIdentifier);
+
+        controlMode = HapticControlMode.Deform;
+        isHapticControlEnabled = true;
+
+        Debug.Log("Touch変形操作を開始しました: " + visualizationMesh.name);
+    }
+
     public void StopHapticControl()
     {
         isHapticControlEnabled = false;
@@ -431,6 +556,7 @@ public class CustomHapticEditor
 
         hasMoveBase = false;
         hasScaleBase = false;
+        hasDeformBase = false;
 
         ContactPointsInfo.Clear();
 
@@ -452,6 +578,9 @@ public class CustomHapticEditor
             case HapticControlMode.Scale:
                 return "Touch拡大縮小操作中";
 
+            case HapticControlMode.Deform:
+                return "Touch変形操作中";
+
             default:
                 return "停止中";
         }
@@ -470,6 +599,7 @@ public class CustomHapticEditor
             controlMode = HapticControlMode.None;
             hasMoveBase = false;
             hasScaleBase = false;
+            hasDeformBase = false;
 
             ContactPointsInfo.Clear();
 
@@ -658,6 +788,99 @@ public class CustomHapticEditor
         if (IsInvalid(newScale))
         {
             Debug.LogError("UpdateScaleTransform: newScale が NaN/Infinity です。");
+            return;
+        }
+
+        visualizationMesh.transform.localScale = newScale;
+
+#if UNITY_EDITOR
+        EditorUtility.SetDirty(visualizationMesh);
+        SceneView.RepaintAll();
+#endif
+    }
+
+    private void UpdateDeformTransform()
+    {
+        if (visualizationMesh == null)
+        {
+            return;
+        }
+
+        if (!hasDeformBase)
+        {
+            ResetDeformBase();
+            return;
+        }
+
+        Vector3 deviceCurrentPosition = CurrentPosition;
+
+        if (IsInvalid(deviceCurrentPosition))
+        {
+            Debug.LogError("UpdateDeformTransform: Touch位置が NaN/Infinity です。");
+            return;
+        }
+
+        if (IsInvalid(deformBaseDevicePosition))
+        {
+            Debug.LogError("UpdateDeformTransform: deformBaseDevicePosition が NaN/Infinity です。");
+            ResetDeformBase();
+            return;
+        }
+
+        if (IsInvalid(deformBaseLocalScale))
+        {
+            Debug.LogError("UpdateDeformTransform: deformBaseLocalScale が NaN/Infinity です。");
+            return;
+        }
+
+        Vector3 deviceDelta = deviceCurrentPosition - deformBaseDevicePosition;
+
+        if (IsInvalid(deviceDelta))
+        {
+            Debug.LogError("UpdateDeformTransform: deviceDelta が NaN/Infinity です。");
+            return;
+        }
+
+        // Touch座標の向きを、感覚に合うUnityワールド方向へ補正
+        Vector3 correctedDelta = new Vector3(
+            -deviceDelta.x,
+             deviceDelta.y,
+            -deviceDelta.z
+        );
+
+        if (IsInvalid(correctedDelta))
+        {
+            Debug.LogError("UpdateDeformTransform: correctedDelta が NaN/Infinity です。");
+            return;
+        }
+
+        // Touch移動量を、変形開始時のオブジェクトの right/up/forward に射影する
+        float localX = Vector3.Dot(correctedDelta, deformBaseRight);
+        float localY = Vector3.Dot(correctedDelta, deformBaseUp);
+        float localZ = Vector3.Dot(correctedDelta, deformBaseForward);
+
+        // 小さな手ブレを無視
+        if (Mathf.Abs(localX) < 1.0f) localX = 0.0f;
+        if (Mathf.Abs(localY) < 1.0f) localY = 0.0f;
+        if (Mathf.Abs(localZ) < 1.0f) localZ = 0.0f;
+
+        float multiplierX = 1.0f + localX * deformSensitivity;
+        float multiplierY = 1.0f + localY * deformSensitivity;
+        float multiplierZ = 1.0f + localZ * deformSensitivity;
+
+        multiplierX = Mathf.Clamp(multiplierX, minDeformMultiplier, maxDeformMultiplier);
+        multiplierY = Mathf.Clamp(multiplierY, minDeformMultiplier, maxDeformMultiplier);
+        multiplierZ = Mathf.Clamp(multiplierZ, minDeformMultiplier, maxDeformMultiplier);
+
+        Vector3 newScale = new Vector3(
+            deformBaseLocalScale.x * multiplierX,
+            deformBaseLocalScale.y * multiplierY,
+            deformBaseLocalScale.z * multiplierZ
+        );
+
+        if (IsInvalid(newScale))
+        {
+            Debug.LogError("UpdateDeformTransform: newScale が NaN/Infinity です。");
             return;
         }
 

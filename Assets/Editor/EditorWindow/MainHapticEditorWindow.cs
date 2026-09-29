@@ -100,6 +100,14 @@ public class MainHapticEditorWindow : EditorWindow
 
         GUILayout.Space(6);
 
+        if (GUILayout.Button("Touchで変形開始", largeButtonStyle))
+        {
+            custom.StartDeformControl();
+            DebugToEditor("Touch変形操作を開始しました");
+        }
+
+        GUILayout.Space(6);
+
         if (GUILayout.Button("Touch操作停止", largeButtonStyle))
         {
             custom.StopHapticControl();
