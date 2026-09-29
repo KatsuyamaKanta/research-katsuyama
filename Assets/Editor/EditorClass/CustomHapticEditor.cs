@@ -110,6 +110,8 @@ public class CustomHapticEditor
     private int counter;
     private Vector3 LastContact;
     private Vector3 LastContactNormal;
+    private Vector3 lastMeshCorrectionNormal = Vector3.zero;
+    private bool hasLastMeshCorrectionNormal = false;
     private GameObject startingPosition;
     private GameObject positionZero;
 
@@ -160,6 +162,11 @@ public class CustomHapticEditor
     // 拡大縮小の制限
     private float minScaleMultiplier = 0.2f;
     private float maxScaleMultiplier = 5.0f;
+
+    //Mesh 接触位置調整用　仮置き
+    private Vector3 lastMeshContactWorld;
+    private Vector3 lastMeshNormalWorld;
+    private bool hasLastMeshContact = false;
 
 
     public CustomHapticEditor(GameObject startingPosition, GameObject positionZero)
@@ -697,6 +704,77 @@ public class CustomHapticEditor
                 currentPenetrationDistance = distance;
                 currentPenetrationDirection = direction;
 
+                if (getAttachedColliderType(other) == colliderTypes.Mesh)
+                {
+                    MeshCollider meshCollider = other as MeshCollider;
+
+                    if (meshCollider != null)
+                    {
+                        MeshSDF meshSdf = new MeshSDF(meshCollider);
+
+                        Vector3 closestPoint;
+                        Vector3 meshNormal;
+
+                        meshSdf.SignedDistance(
+                            visualizationMesh.transform.position,
+                            out closestPoint,
+                            out meshNormal
+                        );
+
+                        // 念のため正規化
+                        meshNormal.Normalize();
+
+                        // MeshSDFの法線が反対向きの場合、
+                        // ComputePenetrationの方向と同じ向きに揃える
+                        if (Vector3.Dot(meshNormal, direction) < 0f)
+                        {
+                            meshNormal = -meshNormal;
+                        }
+
+                        // 前回の法線が存在する場合
+                        if (hasLastMeshCorrectionNormal)
+                        {
+                            float dot = Vector3.Dot(
+                                lastMeshCorrectionNormal,
+                                meshNormal
+                            );
+
+                            // 法線が突然大きく変化した場合
+                            if (dot < 0.5f)
+                            {
+                                // 前回の法線を維持
+                                meshNormal = lastMeshCorrectionNormal;
+                            }
+                            else
+                            {
+                                // 少しずつ新しい法線へ追従
+                                meshNormal = Vector3.Slerp(
+                                    lastMeshCorrectionNormal,
+                                    meshNormal,
+                                    0.2f
+                                ).normalized;
+                            }
+                        }
+
+                        // 今回の法線を保存
+                        lastMeshCorrectionNormal = meshNormal;
+                        hasLastMeshCorrectionNormal = true;
+
+                        // direction * distance ではなく
+                        // Meshの安定した法線方向へ押し戻す
+                        Vector3 correction =
+                            meshNormal * distance;
+
+                        visualizationMesh.transform.position += correction;
+                    }
+                }
+                else
+                {
+                    // Box / Sphere / Capsule は今まで通り
+                    visualizationMesh.transform.position +=
+                        direction * distance;
+                }
+
 
                 isHitColliderOverlapped = true;
 
@@ -982,10 +1060,31 @@ public class CustomHapticEditor
                                 out normal
                             );
 
-                            
-                            
+                            if (hasLastMeshContact)
+                            {
+                                float contactMove =
+                                    Vector3.Distance(cp, lastMeshContactWorld);
+
+                                float normalDot =
+                                    Vector3.Dot(
+                                        normal.normalized,
+                                        lastMeshNormalWorld.normalized
+                                    );
+
+                                // 明らかに別面へ飛んだと判断
+                                if (contactMove > 0.05f &&
+                                    normalDot < 0.3f)
+                                {
+                                    cp = lastMeshContactWorld;
+                                    normal = lastMeshNormalWorld;
+                                }
+                            }
+                            lastMeshContactWorld = cp;
+                            lastMeshNormalWorld = normal;
+                            hasLastMeshContact = true;
+
                             collisionPoint = cp;
-                            
+
                         }
                         break;
                     }
@@ -1289,6 +1388,8 @@ public class CustomHapticEditor
         Debug.Log("OnCollisionExit");
         ContactPointsInfo.Clear();
         resetContactPointInfo(deviceIdentifier);
+        lastMeshCorrectionNormal = Vector3.zero;
+        hasLastMeshCorrectionNormal = false;
     }
 
     private Vector3 DoubleArrayToVector3(double[] darray)
